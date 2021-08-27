@@ -1,7 +1,7 @@
 from kafka import KafkaConsumer
 import json
 
-consumer = KafkaConsumer('cpu_info',
+consumer = KafkaConsumer('source_topic',
                          bootstrap_servers='m.cdh:9092',
                          auto_offset_reset='earliest'
                          )
