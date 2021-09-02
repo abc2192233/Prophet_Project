@@ -29,8 +29,8 @@ source_ddl = f"""
     CREATE TABLE source_table(
         time_stamp  STRING,
         data_info   TIMESTAMP(3),
-        record_time TIMESTAMP(3) METADATA FROM 'timestamp'
---         WATERMARK FOR record_time AS record_time - INTERVAL '3' SECOND 
+        record_time TIMESTAMP(3) METADATA FROM 'timestamp',
+        WATERMARK FOR record_time AS record_time - INTERVAL '3' SECOND 
     ) WITH (
       'connector' = 'kafka',
       'topic' = '{kafka_source_topic}',
@@ -42,13 +42,15 @@ source_ddl = f"""
 
 t_env.execute_sql(source_ddl)
 t_env.execute_sql('DESCRIBE  source_table').print()
-t_env.execute_sql('SELECT * FROM source_table').print()
+# t_env.execute_sql('SELECT * FROM source_table').print()
 
-# t_env.execute_sql("""
-# SELECT TUMBLE_START(ts, INTERVAL '3' SECOND ) as wStart, ts
-# FROM source_table
-# GROUP BY TUMBLE(ts, INTERVAL '3' SECOND ), ts
-# """).print()
+t_env.execute_sql(""" 
+    WITH temp_table AS (
+        SELECT TUMBLE_START(record_time, INTERVAL '3' SECOND ) as wStart, record_time
+        FROM source_table
+        GROUP BY TUMBLE(record_time, INTERVAL '3' SECOND ), record_time)
+    SELECT * FROM temp_table
+""").print()
 #
 # # t_env.sql_query("""
 # SELECT

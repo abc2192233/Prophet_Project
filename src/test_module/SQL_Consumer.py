@@ -1,7 +1,7 @@
 from kafka import KafkaConsumer
 import json
 
-consumer = KafkaConsumer('test',
+consumer = KafkaConsumer('ds',
                          bootstrap_servers='m.cdh:9092',
                          auto_offset_reset='earliest'
                          )
@@ -9,7 +9,7 @@ consumer = KafkaConsumer('test',
 i = 0
 
 for message in consumer:
-    print(i, '\t', message)
+    print(i, '\t', message.value)
     i = i + 1
     if i > 10000:
         exit(0)

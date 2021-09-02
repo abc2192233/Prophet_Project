@@ -18,8 +18,7 @@ class TrainFunc(TableFunction):
             # forecast = self.train_model()
             for time_value in node_cpu_info[7]:
                 # yield node_cpu_info[2], time_value[0], dt
-                time_stamp = pd.to_datetime(time_value[0], utc=True, unit='s').tz_convert('Asia/Shanghai').tz_localize(
-                    None)
+                time_stamp = pd.to_datetime(time_value[0], utc=True, unit='s').tz_convert('Asia/Shanghai').tz_localize(None)
                 yield node_cpu_info[2], time_stamp, time_value[1]
                 # yield node_cpu_info[2], time_value[0], forecast['ds'][0].strftime('%Y-%m-%d %H:%M:%S')
                 # self.add_one(s[2], b[0], b[1])
