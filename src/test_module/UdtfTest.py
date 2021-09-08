@@ -5,7 +5,7 @@ from pyflink.table.udf import udtf, udf
 
 class Split(TableFunction):
     def eval(self, string):
-        for s in string.split(" "):
+        for s in string.init_data(" "):
             yield s, len(s)
 
 

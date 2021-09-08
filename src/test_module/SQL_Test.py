@@ -1,8 +1,8 @@
 from pyflink.table import EnvironmentSettings, StreamTableEnvironment, DataTypes
 from pyflink.table.udf import udtf, udf
 import src.config.Config as Config
-import src.udf.TrainFunc
-from src.udf.TrainFunc import TrainFunc
+import src.udf.TrainFunc_SQL
+from src.udf.TrainFunc_SQL import TrainFunc
 import pandas as pd
 
 
