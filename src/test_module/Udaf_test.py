@@ -10,7 +10,7 @@ def predict():
     # class WeightedAvg(AggregateFunction):
     #
     #     def create_accumulator(self):
-    #         # Row(sum, count)
+    #         # Row(sum, train_c)
     #         return Row(0, 0)
     #
     #     def get_value(self, accumulator):
@@ -91,7 +91,7 @@ def predict():
     #     )
     # """)
 
-    # t_env.execute_sql('SELECT count(weighted_avg(data)) AS sum_value FROM source_table').print()
+    # t_env.execute_sql('SELECT train_c(weighted_avg(data)) AS sum_value FROM source_table').print()
     # convert a Table to a DataStream
     # ds = table.to_append_stream(table, Types.ROW([Types.INT(), Types.STRING()]))
 

@@ -14,7 +14,7 @@ class connect_config:
         self.redis_online_model_db = 2
 
         # jar包路径
-        self.jar_path = "file:///root/PycharmProjects/Prophet_Project/lib/flink-sql-connector-kafka_2.11-1.12.3.jar;file:///root/PycharmProjects/Prophet_Project/lib/json.jar"
+        self.jar_path = "file:///root/PycharmProjects/Prophet_Project/lib/flink-sql-connector-kafka_2.11-1.12.3.jar;file:///root/PycharmProjects/Prophet_Project/lib/json.jar;file:///root/PycharmProjects/Prophet_Project/lib/flink-sql-connector-hbase-2.2_2.11-1.12.3.jar"
 
         # 定义table_sql语法
         self.source_ddl = f"""

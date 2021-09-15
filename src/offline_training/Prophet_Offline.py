@@ -24,11 +24,14 @@ def deserialization_history_cpu_info(source):
         df = pd.DataFrame(columns=['ds', 'y'])
         i = 0
         for cpu_source_info in cpu_source_info_list:
-            js = pickle.loads(cpu_source_info)
-            timestamp = pd.to_datetime(js['timestamp'], utc=True, unit='s').tz_convert('Asia/Shanghai').tz_localize(
-                None)
-            value = js['value']
-            df.loc[i] = [timestamp, value]
+            # js = pickle.loads(cpu_source_info)
+            # timestamp = pd.to_datetime(js['timestamp'], utc=True, unit='s').tz_convert('Asia/Shanghai').tz_localize(
+            #     None)
+            # value = js['value']
+            timestamp = str(cpu_source_info, encoding="utf-8")[0:23]
+            value = str(cpu_source_info, encoding="utf-8")[24:]
+            print(timestamp, value, cpu_source_info)
+            df.loc[i] = [timestamp, float(value)]
             i = i + 1
         predict_cpu_info(df, ip)
         del df
@@ -36,12 +39,11 @@ def deserialization_history_cpu_info(source):
 
 def predict_cpu_info(df, ip):
     print('Training ' + ip.decode('gbk'))
-    m = Prophet()
+    m = Prophet(yearly_seasonality=True, weekly_seasonality=True, daily_seasonality=True)
     m.fit(df)
     future = m.make_future_dataframe(freq='30s', periods=28800)
     forecast = m.predict(future)
     save_cpu_info_model(m, ip)
-    m.make_future_dataframe()
 
 
 def save_cpu_info_model(m, ip):
@@ -95,5 +97,5 @@ print('totally cost', time_end - time_start)
 # time_end = time.time()
 # print('totally cost', time_end-time_start)
 #
-# date = forecast['ds'][1]
+# window = forecast['ds'][1]
 #

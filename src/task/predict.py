@@ -62,12 +62,12 @@ def predict_job():
     t_env.execute_sql("""
     CREATE VIEW temp_view AS(
         WITH temp_table AS(
-            SELECT TUMBLE_START(record_time, INTERVAL '15' SECOND ) AS window_start,
-                TUMBLE_END(record_time, INTERVAL '15' SECOND )
+            SELECT TUMBLE_START(record_time, INTERVAL '3' SECOND ) AS window_start,
+                TUMBLE_END(record_time, INTERVAL '3' SECOND )
                     AS window_end, ip, time_stamp, metric, record_time
             FROM source_table, LATERAL TABLE(split_func(dat))
                 AS T(ip, time_stamp, metric)
-            GROUP BY TUMBLE(record_time, INTERVAL '15' SECOND ), ip, time_stamp, metric, record_time)
+            GROUP BY TUMBLE(record_time, INTERVAL '3' SECOND ), ip, time_stamp, metric, record_time)
         -- SELECT ex1, ex2, ex3 FROM temp_table, LATERAL TABLE(train_func(dat)) AS T(ex1, ex2, ex3)
         SELECT CAST(window_start AS STRING) AS window_start, ip, CAST(time_stamp AS STRING) AS time_stamp, metric FROM temp_table)
     """)
@@ -80,7 +80,7 @@ def predict_job():
     # t_env.execute_sql('SELECT ex1, ex2, ex3 FROM source_table, LATERAL TABLE(train_func(dat)) AS T(ex1, ex2, ex3)').print()
     t_env.execute_sql('DESCRIBE temp_view').print()
 
-    # ds = t_env.to_append_stream(t_env.from_path('temp_view'), Types.ROW([Types.SQL_TIMESTAMP(), Types.STRING(), Types.SQL_TIMESTAMP(), Types.STRING()]))
+    # ds = t_env.to_append_stream(t_env.from_p0ath('temp_view'), Types.ROW([Types.SQL_TIMESTAMP(), Types.STRING(), Types.SQL_TIMESTAMP(), Types.STRING()]))
     #
     ds = t_env.to_append_stream(t_env.from_path('temp_view'),
                                 Types.ROW([Types.STRING(), Types.STRING(), Types.STRING(), Types.STRING()]))
