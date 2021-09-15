@@ -11,5 +11,5 @@ i = 0
 for message in consumer:
     print(i, '\t', message.value)
     i = i + 1
-    if i > 11:
+    if i > 2000:
         exit(0)
