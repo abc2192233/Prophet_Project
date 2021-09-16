@@ -1,4 +1,6 @@
 import json
+import pickle
+
 import pandas as pd
 import redis
 from prophet import Prophet
@@ -41,6 +43,7 @@ class train_c:
         self.current_ip = None
         self.preliminary_model = None
         self.finished_model = None
+        self.forecast = None
 
     def train(self, window, ip, time_stamp, metric):
         if self.is_window_change(window):
@@ -52,10 +55,12 @@ class train_c:
         if self.window is None:
             self.window = window
             return False
-        elif self.window != window and ((pd.to_datetime(window) - pd.to_datetime(self.window)) / pd.Timedelta(seconds=3)) >= 5:
+        elif self.window != window and (
+                (pd.to_datetime(window) - pd.to_datetime(self.window)) / pd.Timedelta(seconds=3)) >= 5:
             self.window = window
             return True
-        elif self.window != window and ((pd.to_datetime(window) - pd.to_datetime(self.window)) / pd.Timedelta(seconds=3)) < 5:
+        elif self.window != window and (
+                (pd.to_datetime(window) - pd.to_datetime(self.window)) / pd.Timedelta(seconds=3)) < 5:
             return False
         elif self.window == window:
             return False
@@ -75,17 +80,28 @@ class train_c:
             self.current_ip = ip
             self.load_model()
             self.train_model()
-            # self.dump_model()
+            self.dump_model()
+            self.predict()
+            self.push_predict_data()
+
+    def push_predict_data(self):
+        redis_connect = redis.StrictRedis(host=self.config.redis_host, password=self.config.redis_password,
+                                          port=self.config.redis_port, db=3)
+        for x in range(self.forecast.shape[0]):
+            redis_connect.hset(self.current_ip, key=str(self.forecast.iloc[x]['ds']),
+                               value=pickle.dumps(self.forecast.iloc[x].to_json()))
 
     def predict(self):
         future = self.preliminary_model.make_future_dataframe(freq=self.config.online_predict_frequency,
-                                                              periods=self.config.online_predict_period)
-        forecast = self.preliminary_model.predict(future)
+                                                              periods=self.config.online_predict_period,
+                                                              include_history=False)
+        self.forecast = self.preliminary_model.predict(future)
 
     def train_model(self):
-        # self.finished_model = Prophet(yearly_seasonality=True, weekly_seasonality=True, daily_seasonality=True).fit(self.data_frame, init=stan_init(self.preliminary_model))
+        self.finished_model = Prophet(yearly_seasonality=True, weekly_seasonality=True, daily_seasonality=True).fit(
+            self.data_frame, init=stan_init(self.preliminary_model))
         # print(json.dumps(model_to_json(self.finished_model)))
-        print(stan_init(Prophet(yearly_seasonality=True, weekly_seasonality=True, daily_seasonality=True, changepoints=None).fit(self.data_frame)))
+        # print(stan_init(Prophet(yearly_seasonality=True, weekly_seasonality=True, daily_seasonality=True, n_changepoints=0).fit(self.data_frame)))
 
     def load_model(self):
         redis_connect = redis.StrictRedis(host=self.config.redis_host, password=self.config.redis_password,
@@ -106,20 +122,21 @@ c = train_c()
 
 
 def init_data(s):
-    # result = c.train(s[0], s[1], s[2], s[3])
-    yield s[0], s[1], s[2], s[3]
+    c.train(s[0], s[1], s[2], s[3])
+    yield c.current_ip, s[0], s[1], s[2], s[3]
     # yield s[0], s[1], s[2], s[3]  # 0:window_start 1:ip 2:time_stamp 3:metric
 
 
 def test_func(s):
     c.train(s[0], s[1], s[2], s[3])
+    yield c.current_ip, s[0], s[1], s[2], s[3]
 
 
-if __name__ == '__main__':
-    # for x in range(10, 60):
-    #     test_func(['2021-09-09 11:29:30.000', '172.30.29.185', f'2021-09-10 14:{x}:00.000', x/100])
-    test_func(['2021-09-09 11:30:30.000', '172.30.29.185', '2021-09-17 15:49:40.000', '1'])
-    test_func(['2021-09-09 11:30:30.000', '172.30.29.185', '2021-09-17 15:49:45.000', '1'])
-    test_func(['2021-09-09 11:30:30.000', '172.30.29.185', '2021-08-17 10:49:50.000', '0.9'])
-    test_func(['2021-09-09 11:30:45.000', '172.30.29.185', '2021-08-17 10:50:40.000', '0.8'])
-    # test_func(['2021-09-09 11:32:30.000', '172.30.29.185', '2021-08-17 10:50:45.000', '1.0'])
+# if __name__ == '__main__':
+#     # for x in range(10, 60):
+#     #     test_func(['2021-09-09 11:29:30.000', '172.30.29.185', f'2021-09-10 14:{x}:00.000', x/100])
+#     test_func(['2021-09-09 11:30:30.000', '172.30.29.185', '2021-09-17 15:49:40.000', '1'])
+#     test_func(['2021-09-09 11:30:30.000', '172.30.29.185', '2021-09-17 15:49:45.000', '1'])
+#     test_func(['2021-09-09 11:30:30.000', '172.30.29.185', '2021-08-17 10:49:50.000', '0.9'])
+#     test_func(['2021-09-09 11:30:45.000', '172.30.29.185', '2021-08-17 10:50:40.000', '0.8'])
+#     # test_func(['2021-09-09 11:32:30.000', '172.30.29.185', '2021-08-17 10:50:45.000', '1.0'])

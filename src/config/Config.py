@@ -3,7 +3,7 @@ class connect_config:
         # 定义kafka连接配置
         self.kafka_bootstrap_server = 'm.cdh:9092'
         self.kafka_source_topic = 'source_topic'
-        self.kafka_scan_startup_mode = 'earliest-offset'    # 'earliest-offset', 'latest-offset', 'group-offsets', 'timestamp' and 'specific-offsets'
+        self.kafka_scan_startup_mode = 'latest-offset'    # 'earliest-offset', 'latest-offset', 'group-offsets', 'timestamp' and 'specific-offsets'
 
         # 定义Redis连接配置
         self.redis_host = 'm.cdh'

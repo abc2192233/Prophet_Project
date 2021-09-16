@@ -39,7 +39,7 @@ def deserialization_history_cpu_info(source):
 
 def predict_cpu_info(df, ip):
     print('Training ' + ip.decode('gbk'))
-    m = Prophet(yearly_seasonality=True, weekly_seasonality=True, daily_seasonality=True)
+    m = Prophet(yearly_seasonality=True, weekly_seasonality=True, daily_seasonality=True, n_changepoints=0)
     m.fit(df)
     future = m.make_future_dataframe(freq='30s', periods=28800)
     forecast = m.predict(future)
